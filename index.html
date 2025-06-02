@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat P2P Sekolah</title>
+  <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    #chat { border: 1px solid #ccc; padding: 10px; height: 250px; overflow-y: auto; margin-top: 10px; background: #f9f9f9; }
+    input, button { padding: 8px; margin: 5px 0; width: 100%; }
+    button { cursor: pointer; background-color: #4CAF50; color: white; border: none; }
+    button:hover { background-color: #45a049; }
+  </style>
+</head>
+<body>
+  <h2>💬 Aplikasi Chat P2P Sekolah</h2>
+  <p><strong>ID Kamu:</strong> <span id="my-id">Loading...</span></p>
+
+  <label for="peer-id">ID Teman:</label>
+  <input id="peer-id" placeholder="Masukkan ID teman">
+  <button onclick="connect()">Hubungkan</button>
+
+  <div id="chat"></div>
+
+  <input id="message" placeholder="Ketik pesan kamu di sini">
+  <button onclick="send()">Kirim</button>
+
+  <script>
+    const peer = new Peer();
+    let conn;
+
+    peer.on('open', id => {
+      document.getElementById('my-id').textContent = id;
+    });
+
+    peer.on('connection', connection => {
+      conn = connection;
+      conn.on('data', showMessage);
+    });
+
+    function connect() {
+      const friendId = document.getElementById('peer-id').value;
+      conn = peer.connect(friendId);
+      conn.on('open', () => {
+        conn.on('data', showMessage);
+      });
+    }
+
+    function send() {
+      const msg = document.getElementById('message').value;
+      if (conn && conn.open) {
+        conn.send(msg);
+        showMessage(msg, true);
+        document.getElementById('message').value = '';
+      }
+    }
+
+    function showMessage(msg, isMine = false) {
+      const div = document.createElement('div');
+      div.innerHTML = `<strong>${isMine ? 'Kamu' : 'Teman'}:</strong> ${msg}`;
+      document.getElementById('chat').appendChild(div);
+      document.getElementById('chat').scrollTop = chat.scrollHeight;
+    }
+  </script>
+</body>
+</html>
